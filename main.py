@@ -98,8 +98,51 @@ def show_login_form():
 
 def new_game():
     menu.withdraw()
+    menu_level.deiconify()
+
+def easy_game():
+    global ROWS, COLS, BOMBS, SIZE
+    menu_level.withdraw()
+    WIDTH, HEIGHT = 500, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
-    main()
+    ROWS, COLS = 9, 9
+    BOMBS = 10
+    SIZE = int((WIDTH // ROWS))
+    main(False, 0)
+
+def medium_game():
+    global ROWS, COLS, BOMBS, SIZE
+    menu_level.withdraw()
+    WIDTH, HEIGHT = 500, 600
+    win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
+    ROWS, COLS = 16, 16
+    BOMBS = 40
+    SIZE = int((WIDTH // ROWS))
+    main(False, 0)
+
+def advanced_game():
+    global ROWS, COLS, BOMBS, SIZE
+    menu_level.withdraw()
+    WIDTH, HEIGHT = 925, 800
+    win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
+    ROWS, COLS = 16, 30
+    BOMBS = 90
+    SIZE = int((500 // ROWS))
+    main(False, 0)
+def load_game():
+    global user_id
+
+    cursor.execute('SELECT field_data FROM games WHERE user_id = ? ORDER BY id DESC ', (user_id,))
+    saved_game = cursor.fetchall()
+    for s_game in saved_game:
+        TF = True
+        menu.withdraw()
+        win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
+        print(s_game[0])
+        main(TF,s_game[0])
+        print(s_game[0])
+
+
 
 def rat_games():
     global user_id
@@ -177,12 +220,23 @@ menu = CTk()
 menu.geometry("500x400")
 
 btn_menu = CTkButton(master=menu, text="New Game", corner_radius=32, hover_color="#6666FF", command=new_game)
-btn_menu_saved = CTkButton(master=menu, text="Saved Game", corner_radius=32, hover_color="#6666FF")
+btn_menu_saved = CTkButton(master=menu, text="Saved Game", corner_radius=32, hover_color="#6666FF",command=load_game)
 btn_menu_rat = CTkButton(master=menu, text="Rating", corner_radius=32, hover_color="#6666FF", command=rat_games)
 
 btn_menu.place(relx=0.5, rely=0.35, anchor="center")
 btn_menu_rat.place(relx=0.5, rely=0.5, anchor="center")
 btn_menu_saved.place(relx=0.5, rely=0.65, anchor="center")
+
+menu_level = CTk()
+menu_level.geometry("500x400")
+
+btn_easy = CTkButton(master=menu_level, text="Новачок", corner_radius=32, hover_color="#6666FF", command=easy_game)
+btn_medium = CTkButton(master=menu_level, text="Любитель", corner_radius=32, hover_color="#6666FF",command=medium_game)
+btn_advanced = CTkButton(master=menu_level, text="Професіонал", corner_radius=32, hover_color="#6666FF", command=advanced_game)
+
+btn_easy.place(relx=0.5, rely=0.35, anchor="center")
+btn_medium.place(relx=0.5, rely=0.5, anchor="center")
+btn_advanced.place(relx=0.5, rely=0.65, anchor="center")
 
 rating_window = CTk()
 rating_window.geometry("500x400")
@@ -366,11 +420,20 @@ def check_win(cover_field, field):
     return True
 
 
-def main():
+def main(TF,saved_field):
+    print("main start")
+    print(ROWS,COLS)
     run = True
-    field = create_mine_field(ROWS, COLS, BOMBS)
+    print(TF)
+    if TF == False:
+        print("we create field")
+        field = create_mine_field(ROWS, COLS, BOMBS)
+    else:
+        print("we load field")
+        field = saved_field
     print(field)
     cover_field = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    print(cover_field)
     save_text = TIME_FONT.render("Save Game", 1, "black")
     flags = BOMBS
     clicks = 0
@@ -459,3 +522,6 @@ def main():
     pygame.quit()
 
 app.mainloop()
+
+#[[0, 1, 2, -1, 1, 1, 1, 2, 1, 1], [0, 1, -1, 2, 1, 1, -1, 2, -1, 1], [0, 1, 1, 1, 0, 1, 1, 2, 1, 1], [0, 0, 1, 1, 1, 0, 0, 0, 0, 0], [1, 1, 2, -1, 3, 2, 1, 0, 0, 0], [1, -1, 3, 3, -1, -1, 3, 1, 1, 0], [2, 2, 3, -1, 4, -1, 4, -1, 2, 0], [1, -1, 2, 1, 2, 1, 3, -1, 2, 0], [3, 3, 2, 0, 0, 0, 1, 1, 1, 0], [-1, -1, 1, 0, 0, 0, 0, 0, 0, 0]]
+#[[0, 0, 0, 0, 0, 1, -1, 4, -1, 2], [0, 1, 1, 1, 0, 1, 2, -1, -1, 2], [0, 1, -1, 1, 0, 0, 1, 3, 3, 2], [0, 1, 1, 1, 0, 0, 0, 1, -1, 1], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1], [1, 2, 2, 2, 1, 0, 1, 1, 2, 1], [-1, 3, -1, -1, 2, 0, 1, -1, 2, -1], [2, -1, 5, -1, 2, 0, 1, 1, 2, 1], [1, 2, -1, 2, 1, 1, 1, 1, 0, 0], [0, 1, 1, 1, 0, 1, -1, 1, 0, 0]]
