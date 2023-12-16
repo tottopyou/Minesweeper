@@ -111,7 +111,7 @@ def easy_game():
     ROWS, COLS = 9, 9
     BOMBS = 10
     SIZE = int((WIDTH // ROWS))
-    main(False, 0,0)
+    main(False, 0, 0)
 
 def medium_game():
     global ROWS, COLS, BOMBS, SIZE
@@ -121,19 +121,19 @@ def medium_game():
     ROWS, COLS = 16, 16
     BOMBS = 40
     SIZE = int((WIDTH // ROWS))
-    main(False, 0,0)
+    main(False, 0, 0)
 
 def advanced_game():
     global ROWS, COLS, BOMBS, SIZE
     menu_level.withdraw()
-    WIDTH, HEIGHT = 925, 800
+    WIDTH, HEIGHT = 925, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
     ROWS, COLS = 16, 30
     BOMBS = 90
     SIZE = int((500 // ROWS))
-    main(False, 0,0)
+    main(False, 0, 0)
 def load_game():
-    global user_id,SIZE
+    global user_id, SIZE
 
     cursor.execute('SELECT field_data, covered_field FROM games WHERE user_id = ? ORDER BY id DESC', (user_id,))
     saved_game = cursor.fetchone()
@@ -148,8 +148,8 @@ def load_game():
             menu.withdraw()
 
             lenth = len(saved_covered_field[0])
-            if lenth > 25 :
-                WIDTH, HEIGHT = 925, 800
+            if lenth > 25:
+                WIDTH, HEIGHT = 925, 600
                 SIZE = int((500 // 16))
             elif lenth > 10:
                 WIDTH, HEIGHT = 500, 600
@@ -337,13 +337,22 @@ def create_mine_field(rows, cols, mines):
 
 
 def draw(win, field, cover_field, current_time, result_message=None, flags=None):
+
     win.fill(BG_COLOR)
 
+    lenth = len(field[0])
+    if lenth > 25:
+        WIDTH, HEIGHT = 925, 600
+    else:
+        WIDTH, HEIGHT = 500, 600
+
     save_text = TIME_FONT.render("Save Game", 1, "white")
-    save_button_x = WIDTH - save_text.get_width() - 40
-    save_button_y = HEIGHT - save_text.get_height() - 10
-    pygame.draw.rect(win, "black", (save_button_x-10, save_button_y-10,save_button_x + save_text.get_width(),save_button_y + save_text.get_height()))
-    win.blit(save_text, (save_button_x, save_button_y))
+    save_button_width = save_text.get_width() + 20
+    save_button_height = save_text.get_height() + 20
+    save_button_x = WIDTH - save_button_width - 10
+    save_button_y = HEIGHT - save_button_height - 10
+    pygame.draw.rect(win, "black", (save_button_x, save_button_y, save_button_width, save_button_height))
+    win.blit(save_text, (save_button_x + 10, save_button_y + 10))
 
     time_text = TIME_FONT.render(f"TIME Elapsed: {round(current_time)}", 1, "black")
     win.blit(time_text, (10, HEIGHT - time_text.get_height()))
@@ -439,7 +448,7 @@ def check_win(cover_field, field):
     return True
 
 
-def main(TF,saved_field,saved_covered_field):
+def main(TF, saved_field, saved_covered_field):
     print("main start")
     print(ROWS,COLS)
     run = True
@@ -462,6 +471,12 @@ def main(TF,saved_field,saved_covered_field):
     won = False
     start_time = 0
     saving = False
+    lenth = len(field[0])
+    if lenth > 25:
+        WIDTH, HEIGHT = 925, 600
+    else:
+        WIDTH, HEIGHT = 500, 600
+
 
 
     while run:
@@ -538,7 +553,7 @@ def main(TF,saved_field,saved_covered_field):
             clicks = 0
             won = False
 
-        draw(win, field, cover_field, current_time, flags=flags)
+        draw(win, field, cover_field, current_time, flags=flags, )
 
     pygame.quit()
 
