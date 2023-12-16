@@ -23,6 +23,7 @@ cursor.execute('''
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         field_data TEXT,
+        covered_field TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )
 ''')
@@ -42,25 +43,27 @@ def save_game_result(user_id, result):
     conn.commit()
     print("Game result saved!")
 
-def save_game(user_id, field_db):
-    serialized_field_data = json.dumps(field_db)
+def save_game(user_id, field_data, cover_field):
+    serialized_field_data = json.dumps(field_data)
+    serialized_cover_field = json.dumps(cover_field)
 
     cursor.execute('SELECT COUNT(*) FROM games WHERE user_id = ?', (user_id,))
     saved_games_count = cursor.fetchone()[0]
 
     if saved_games_count >= 1:
-
         cursor.execute('SELECT id FROM games WHERE user_id = ? ORDER BY id ASC LIMIT 1', (user_id,))
         oldest_game_id = cursor.fetchone()[0]
 
-        cursor.execute('UPDATE games SET field_data = ? WHERE id = ?', (serialized_field_data, oldest_game_id))
+        cursor.execute('UPDATE games SET field_data = ?, covered_field = ? WHERE id = ?',
+                       (serialized_field_data, serialized_cover_field, oldest_game_id))
         conn.commit()
         print("Oldest save updated!")
     else:
-
-        cursor.execute('INSERT INTO games (user_id, field_data) VALUES (?, ?)', (user_id, serialized_field_data))
+        cursor.execute('INSERT INTO games (user_id, field_data, covered_field) VALUES (?, ?, ?)',
+                       (user_id, serialized_field_data, serialized_cover_field))
         conn.commit()
         print("Game saved!")
+
 def register():
     new_username = input_new_username.get()
     new_password = input_new_password.get()
@@ -108,7 +111,7 @@ def easy_game():
     ROWS, COLS = 9, 9
     BOMBS = 10
     SIZE = int((WIDTH // ROWS))
-    main(False, 0)
+    main(False, 0,0)
 
 def medium_game():
     global ROWS, COLS, BOMBS, SIZE
@@ -118,7 +121,7 @@ def medium_game():
     ROWS, COLS = 16, 16
     BOMBS = 40
     SIZE = int((WIDTH // ROWS))
-    main(False, 0)
+    main(False, 0,0)
 
 def advanced_game():
     global ROWS, COLS, BOMBS, SIZE
@@ -128,20 +131,36 @@ def advanced_game():
     ROWS, COLS = 16, 30
     BOMBS = 90
     SIZE = int((500 // ROWS))
-    main(False, 0)
+    main(False, 0,0)
 def load_game():
-    global user_id
+    global user_id,SIZE
 
-    cursor.execute('SELECT field_data FROM games WHERE user_id = ? ORDER BY id DESC ', (user_id,))
-    saved_game = cursor.fetchall()
-    for s_game in saved_game:
-        TF = True
-        menu.withdraw()
-        win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
-        print(s_game[0])
-        main(TF,s_game[0])
-        print(s_game[0])
+    cursor.execute('SELECT field_data, covered_field FROM games WHERE user_id = ? ORDER BY id DESC', (user_id,))
+    saved_game = cursor.fetchone()
 
+    if saved_game:
+        serialized_field_data, serialized_covered_field = saved_game
+        field_data = json.loads(serialized_field_data)
+        saved_covered_field = json.loads(serialized_covered_field)
+
+        if field_data and saved_covered_field:
+            TF = True
+            menu.withdraw()
+
+            lenth = len(saved_covered_field[0])
+            if lenth > 25 :
+                WIDTH, HEIGHT = 925, 800
+                SIZE = int((500 // 16))
+            elif lenth > 10:
+                WIDTH, HEIGHT = 500, 600
+                SIZE = int((500 // 16))
+            else:
+                WIDTH, HEIGHT = 500, 600
+                SIZE = int((500 // 9))
+            win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
+            main(TF, field_data, saved_covered_field)
+    else:
+        print("No saved game found.")
 
 
 def rat_games():
@@ -420,19 +439,21 @@ def check_win(cover_field, field):
     return True
 
 
-def main(TF,saved_field):
+def main(TF,saved_field,saved_covered_field):
     print("main start")
     print(ROWS,COLS)
     run = True
     print(TF)
     if TF == False:
-        print("we create field")
+        print("We create field")
         field = create_mine_field(ROWS, COLS, BOMBS)
+        cover_field = [[0 for _ in range(COLS)] for _ in range(ROWS)]
     else:
-        print("we load field")
+        print("We load field")
         field = saved_field
+        cover_field = saved_covered_field
     print(field)
-    cover_field = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+
     print(cover_field)
     save_text = TIME_FONT.render("Save Game", 1, "black")
     flags = BOMBS
@@ -489,7 +510,7 @@ def main(TF,saved_field):
                         cover_field[row][col] = -2
 
         if saving:
-            save_game(user_id, field)
+            save_game(user_id, field,cover_field)
             saving = False
 
 
@@ -523,5 +544,3 @@ def main(TF,saved_field):
 
 app.mainloop()
 
-#[[0, 1, 2, -1, 1, 1, 1, 2, 1, 1], [0, 1, -1, 2, 1, 1, -1, 2, -1, 1], [0, 1, 1, 1, 0, 1, 1, 2, 1, 1], [0, 0, 1, 1, 1, 0, 0, 0, 0, 0], [1, 1, 2, -1, 3, 2, 1, 0, 0, 0], [1, -1, 3, 3, -1, -1, 3, 1, 1, 0], [2, 2, 3, -1, 4, -1, 4, -1, 2, 0], [1, -1, 2, 1, 2, 1, 3, -1, 2, 0], [3, 3, 2, 0, 0, 0, 1, 1, 1, 0], [-1, -1, 1, 0, 0, 0, 0, 0, 0, 0]]
-#[[0, 0, 0, 0, 0, 1, -1, 4, -1, 2], [0, 1, 1, 1, 0, 1, 2, -1, -1, 2], [0, 1, -1, 1, 0, 0, 1, 3, 3, 2], [0, 1, 1, 1, 0, 0, 0, 1, -1, 1], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1], [1, 2, 2, 2, 1, 0, 1, 1, 2, 1], [-1, 3, -1, -1, 2, 0, 1, -1, 2, -1], [2, -1, 5, -1, 2, 0, 1, 1, 2, 1], [1, 2, -1, 2, 1, 1, 1, 1, 0, 0], [0, 1, 1, 1, 0, 1, -1, 1, 0, 0]]
