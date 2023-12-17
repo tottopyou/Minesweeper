@@ -104,36 +104,42 @@ def new_game():
     menu_level.deiconify()
 
 def easy_game():
-    global ROWS, COLS, BOMBS, SIZE
+    global ROWS, COLS, BOMBS, SIZE,flag_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 500, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
     ROWS, COLS = 9, 9
     BOMBS = 10
     SIZE = int((WIDTH // ROWS))
+    flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
+    flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     main(False, 0, 0)
 
 def medium_game():
-    global ROWS, COLS, BOMBS, SIZE
+    global ROWS, COLS, BOMBS, SIZE,flag_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 500, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
     ROWS, COLS = 16, 16
     BOMBS = 40
     SIZE = int((WIDTH // ROWS))
+    flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
+    flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     main(False, 0, 0)
 
 def advanced_game():
-    global ROWS, COLS, BOMBS, SIZE
+    global ROWS, COLS, BOMBS, SIZE,flag_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 925, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
     ROWS, COLS = 16, 30
     BOMBS = 90
     SIZE = int((500 // ROWS))
+    flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
+    flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     main(False, 0, 0)
 def load_game():
-    global user_id, SIZE
+    global user_id, SIZE,flag_image
 
     cursor.execute('SELECT field_data, covered_field FROM games WHERE user_id = ? ORDER BY id DESC', (user_id,))
     saved_game = cursor.fetchone()
@@ -157,6 +163,9 @@ def load_game():
             else:
                 WIDTH, HEIGHT = 500, 600
                 SIZE = int((500 // 9))
+                flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
+                flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
+
             win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
             main(TF, field_data, saved_covered_field)
     else:
@@ -423,7 +432,7 @@ def uncover_from_pos(row, col, cover_field, field):
             if value == 0 and cover_field[r][c] != -2:
                 q.put((r, c))
 
-            if cover_field[r][c] != -2:
+            if cover_field[r][c] != -2 and value >= 0:
                 cover_field[r][c] = 1
             visited.add((r, c))
 
@@ -558,4 +567,3 @@ def main(TF, saved_field, saved_covered_field):
     pygame.quit()
 
 app.mainloop()
-
