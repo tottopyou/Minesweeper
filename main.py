@@ -38,12 +38,12 @@ cursor.execute('''
 
 conn.commit()
 
-def save_game_result(user_id, result):
+def save_game_result(user_id, result): # function for saving game results
     cursor.execute('INSERT INTO results (user_id, resultOfgame) VALUES (?, ?)', (user_id, result))
     conn.commit()
     print("Game result saved!")
 
-def save_game(user_id, field_data, cover_field):
+def save_game(user_id, field_data, cover_field): # function for saving game field in db
     serialized_field_data = json.dumps(field_data)
     serialized_cover_field = json.dumps(cover_field)
 
@@ -64,7 +64,7 @@ def save_game(user_id, field_data, cover_field):
         conn.commit()
         print("Game saved!")
 
-def register():
+def register(): # function for opening register window and register form
     new_username = input_new_username.get()
     new_password = input_new_password.get()
 
@@ -79,7 +79,7 @@ def register():
         print("Registration successful!")
         show_login_form()
 
-def login():
+def login(): # function for staring window 
     global user_id
 
     username = input_username.get()
@@ -95,15 +95,15 @@ def login():
         menu.deiconify()
     else:
         print("Invalid username or password.")
-def show_login_form():
+def show_login_form(): # function for changing window between login and register
     reg.withdraw()
     app.deiconify()
 
-def new_game():
+def new_game(): # function for opening window with levels of game
     menu.withdraw()
     menu_level.deiconify()
 
-def easy_game():
+def easy_game(): # function for starting easy level game 
     global ROWS, COLS, BOMBS, SIZE,flag_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 500, 600
@@ -115,7 +115,7 @@ def easy_game():
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     main(False, 0, 0)
 
-def medium_game():
+def medium_game(): # function for starting medium level game 
     global ROWS, COLS, BOMBS, SIZE,flag_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 500, 600
@@ -127,7 +127,7 @@ def medium_game():
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     main(False, 0, 0)
 
-def advanced_game():
+def advanced_game(): # function for starting advanced level game 
     global ROWS, COLS, BOMBS, SIZE,flag_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 925, 600
@@ -138,7 +138,7 @@ def advanced_game():
     flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     main(False, 0, 0)
-def load_game():
+def load_game(): # function for starting saved game 
     global user_id, SIZE,flag_image
 
     cursor.execute('SELECT field_data, covered_field FROM games WHERE user_id = ? ORDER BY id DESC', (user_id,))
@@ -172,7 +172,7 @@ def load_game():
         print("No saved game found.")
 
 
-def rat_games():
+def rat_games(): # function for showing results of last 10 games in rating window
     global user_id
 
     cursor.execute('SELECT resultOfgame FROM results WHERE user_id = ? ORDER BY id DESC LIMIT 10', (user_id,))
@@ -196,12 +196,12 @@ def rat_games():
     rating_window.deiconify()
     menu.withdraw()
 
-def back_to_menu():
+def back_to_menu(): # function that back to the previous windows
     menu.deiconify()
     rating_window.withdraw()
 
 
-def show_register_form():
+def show_register_form(): # function for changing window between login and register
     app.withdraw()
     reg.deiconify()
 
@@ -298,7 +298,7 @@ win.blit(bombs_text, (WIDTH - bombs_text.get_width() - 10, HEIGHT - bombs_text.g
 flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
 flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
 
-def get_neighbors(row, col, rows, cols):
+def get_neighbors(row, col, rows, cols): # function for game logic
     neighbors = []
 
     if row > 0:  # up
@@ -322,7 +322,7 @@ def get_neighbors(row, col, rows, cols):
     return neighbors
 
 
-def create_mine_field(rows, cols, mines):
+def create_mine_field(rows, cols, mines): # function that randomly crate mines on game field
     field = [[0 for _ in range(cols)] for _ in range(rows)]
     mines_positions = set()
     while len(mines_positions) < mines:
@@ -345,7 +345,7 @@ def create_mine_field(rows, cols, mines):
 
 
 
-def draw(win, field, cover_field, current_time, result_message=None, flags=None):
+def draw(win, field, cover_field, current_time, result_message=None, flags=None): # function that draw game field
 
     win.fill(BG_COLOR)
 
@@ -407,7 +407,7 @@ def draw(win, field, cover_field, current_time, result_message=None, flags=None)
 
 
 
-def get_grid_pos(mouse_pos):
+def get_grid_pos(mouse_pos): # function for sending mouse coordinates 
     mx, my = mouse_pos
     row = int(my // SIZE)
     col = int(mx // SIZE)
@@ -415,7 +415,7 @@ def get_grid_pos(mouse_pos):
     return row, col
 
 
-def uncover_from_pos(row, col, cover_field, field):
+def uncover_from_pos(row, col, cover_field, field): # function that open the cell 
     q = Queue()
     q.put((row, col))
     visited = set()
@@ -436,20 +436,20 @@ def uncover_from_pos(row, col, cover_field, field):
                 cover_field[r][c] = 1
             visited.add((r, c))
 
-def draw_lost(win, text):
+def draw_lost(win, text): # function that show lose text
     text = LOST_FONT.render(text, 1, "black")
     win.blit(text, (WIDTH / 2 - text.get_width() / 2,
                     HEIGHT / 2 - text.get_height() / 2))
     pygame.display.update()
 
-def draw_won(win, text):
+def draw_won(win, text): # function that show win text
     text = LOST_FONT.render(text, 1, "black")
     win.blit(text, (WIDTH / 2 - text.get_width() / 2,
                     HEIGHT / 2 - text.get_height() / 2))
     pygame.display.update()
 
 
-def check_win(cover_field, field):
+def check_win(cover_field, field): # function that checked conditions for wining the game
     for i in range(ROWS):
         for j in range(COLS):
             if cover_field[i][j] == 0 and field[i][j] != -1:
@@ -457,7 +457,7 @@ def check_win(cover_field, field):
     return True
 
 
-def main(TF, saved_field, saved_covered_field):
+def main(TF, saved_field, saved_covered_field): # the main function that start the game 
     print("main start")
     print(ROWS,COLS)
     run = True
