@@ -104,7 +104,7 @@ def new_game(): # function for opening window with levels of game
     menu_level.deiconify()
 
 def easy_game(): # function for starting easy level game 
-    global ROWS, COLS, BOMBS, SIZE,flag_image
+    global ROWS, COLS, BOMBS, SIZE, flag_image, question_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 500, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
@@ -113,10 +113,12 @@ def easy_game(): # function for starting easy level game
     SIZE = int((WIDTH // ROWS))
     flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
+    question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
+    question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
     main(False, 0, 0)
 
 def medium_game(): # function for starting medium level game 
-    global ROWS, COLS, BOMBS, SIZE,flag_image
+    global ROWS, COLS, BOMBS, SIZE,flag_image, question_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 500, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
@@ -125,10 +127,12 @@ def medium_game(): # function for starting medium level game
     SIZE = int((WIDTH // ROWS))
     flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
+    question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
+    question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
     main(False, 0, 0)
 
 def advanced_game(): # function for starting advanced level game 
-    global ROWS, COLS, BOMBS, SIZE,flag_image
+    global ROWS, COLS, BOMBS, SIZE,flag_image, question_image
     menu_level.withdraw()
     WIDTH, HEIGHT = 925, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
@@ -137,9 +141,11 @@ def advanced_game(): # function for starting advanced level game
     SIZE = int((500 // ROWS))
     flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
+    question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
+    question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
     main(False, 0, 0)
 def load_game(): # function for starting saved game 
-    global user_id, SIZE,flag_image
+    global user_id, SIZE,flag_image, question_image
 
     cursor.execute('SELECT field_data, covered_field FROM games WHERE user_id = ? ORDER BY id DESC', (user_id,))
     saved_game = cursor.fetchone()
@@ -165,6 +171,8 @@ def load_game(): # function for starting saved game
                 SIZE = int((500 // 9))
                 flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
                 flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
+                question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
+                question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
 
             win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
             main(TF, field_data, saved_covered_field)
@@ -377,10 +385,16 @@ def draw(win, field, cover_field, current_time, result_message=None, flags=None)
 
             is_covered = cover_field[i][j] == 0
             is_flag = cover_field[i][j] == -2
+            is_question = cover_field[i][j] == -3
             is_bomb = value == -1
 
             if is_flag:
                 win.blit(flag_image, (x, y))
+                pygame.draw.rect(win, "black", (x, y, SIZE, SIZE), 2)
+                continue
+
+            if is_question:
+                win.blit(question_image, (x, y))
                 pygame.draw.rect(win, "black", (x, y, SIZE, SIZE), 2)
                 continue
 
@@ -475,6 +489,7 @@ def main(TF, saved_field, saved_covered_field): # the main function that start t
     print(cover_field)
     save_text = TIME_FONT.render("Save Game", 1, "black")
     flags = BOMBS
+    question = BOMBS
     clicks = 0
     lost = False
     won = False
@@ -532,6 +547,13 @@ def main(TF, saved_field, saved_covered_field): # the main function that start t
                     elif (flags > 0):
                         flags -= 1
                         cover_field[row][col] = -2
+                elif mouse_pressed[1]:
+                    if cover_field[row][col] == -3:
+                        cover_field[row][col] = 0
+                        question += 1
+                    elif (question > 0):
+                        question -= 1
+                        cover_field[row][col] = -3
 
         if saving:
             save_game(user_id, field,cover_field)
