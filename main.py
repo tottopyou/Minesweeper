@@ -115,7 +115,7 @@ def easy_game(): # function for starting easy level game
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
     question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
-    main(False, 0, 0)
+    main(False, 0, 0, 9, 9, 10)
 
 def medium_game(): # function for starting medium level game 
     global ROWS, COLS, BOMBS, SIZE,flag_image, question_image
@@ -129,7 +129,7 @@ def medium_game(): # function for starting medium level game
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
     question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
-    main(False, 0, 0)
+    main(False, 0, 0, 16, 16, 40)
 
 def advanced_game(): # function for starting advanced level game 
     global ROWS, COLS, BOMBS, SIZE,flag_image, question_image
@@ -143,7 +143,7 @@ def advanced_game(): # function for starting advanced level game
     flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
     question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
     question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
-    main(False, 0, 0)
+    main(False, 0, 0,16, 30, 90)
 def load_game(): # function for starting saved game 
     global user_id, SIZE,flag_image, question_image
 
@@ -163,9 +163,11 @@ def load_game(): # function for starting saved game
             if lenth > 25:
                 WIDTH, HEIGHT = 925, 600
                 SIZE = int((500 // 16))
+                BOMBS = 90
             elif lenth > 10:
                 WIDTH, HEIGHT = 500, 600
                 SIZE = int((500 // 16))
+                BOMBS = 40
             else:
                 WIDTH, HEIGHT = 500, 600
                 SIZE = int((500 // 9))
@@ -173,9 +175,13 @@ def load_game(): # function for starting saved game
                 flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
                 question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
                 question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
+                BOMBS = 10
+
+            ROWS = len(field_data)
+            COLS = len(field_data[0])
 
             win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.SHOWN)
-            main(TF, field_data, saved_covered_field)
+            main(TF, field_data, saved_covered_field, ROWS, COLS, BOMBS)
     else:
         print("No saved game found.")
 
@@ -284,7 +290,7 @@ win = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.HIDDEN)
 pygame.display.set_caption("Minesweeper")
 
 BG_COLOR = "white"
-ROWS, COLS = 10, 10
+ROWS, COLS = 9, 9
 BOMBS = 15
 
 SIZE = int((WIDTH // ROWS))
@@ -305,6 +311,8 @@ win.blit(bombs_text, (WIDTH - bombs_text.get_width() - 10, HEIGHT - bombs_text.g
 
 flag_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'flag.jpg'))
 flag_image = pygame.transform.scale(flag_image, (SIZE, SIZE))
+question_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'question.jpg'))
+question_image = pygame.transform.scale(question_image, (SIZE, SIZE))
 
 def get_neighbors(row, col, rows, cols): # function for game logic
     neighbors = []
@@ -353,11 +361,12 @@ def create_mine_field(rows, cols, mines): # function that randomly crate mines o
 
 
 
-def draw(win, field, cover_field, current_time, result_message=None, flags=None): # function that draw game field
+def draw(win, field, cover_field, current_time, result_message=None, flags=None, question=None): # function that draw game field
 
     win.fill(BG_COLOR)
 
     lenth = len(field[0])
+
     if lenth > 25:
         WIDTH, HEIGHT = 925, 600
     else:
@@ -471,7 +480,7 @@ def check_win(cover_field, field): # function that checked conditions for wining
     return True
 
 
-def main(TF, saved_field, saved_covered_field): # the main function that start the game 
+def main(TF, saved_field, saved_covered_field, ROWS, COLS, BOMBS): # the main function that start the game
     print("main start")
     print(ROWS,COLS)
     run = True
@@ -584,7 +593,7 @@ def main(TF, saved_field, saved_covered_field): # the main function that start t
             clicks = 0
             won = False
 
-        draw(win, field, cover_field, current_time, flags=flags, )
+        draw(win, field, cover_field, current_time, flags=flags, question=question)
 
     pygame.quit()
 
